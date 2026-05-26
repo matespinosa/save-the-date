@@ -24,13 +24,19 @@ const italianno = Italianno({
 });
 
 export const metadata: Metadata = {
-  title: "Julieth & Mateo — Save the Date",
-  description:
-    "03 . 10 . 2026 — Acompáñanos a celebrar el día que dijimos sí para siempre.",
+  title: "Mateo & Julieth — Save the Date",
+  description: "Save the Date — 03.10.2026 · Bogotá, Colombia",
   openGraph: {
-    title: "Julieth & Mateo — Save the Date",
-    description: "03 . 10 . 2026",
+    title: "Mateo & Julieth — Save the Date",
+    description: "03.10.2026 · Bogotá, Colombia",
     type: "website",
+    locale: "es_CO",
+    siteName: "Mateo & Julieth",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Mateo & Julieth — Save the Date",
+    description: "03.10.2026 · Bogotá, Colombia",
   },
 };
 
