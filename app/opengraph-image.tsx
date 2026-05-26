@@ -7,25 +7,22 @@ export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
 /**
- * Fetches a Google Font and returns its binary contents so ImageResponse can
- * render with it. We fetch the CSS first, parse out the woff2/otf URL, then
- * download the font itself.
+ * Fetches a Google Font subset and returns its binary contents so
+ * ImageResponse can render with it. Satori (the engine behind @vercel/og)
+ * cannot parse woff2 — only TTF/OTF. Google Fonts returns woff2 by default
+ * for modern UAs, but when you pass `&text=<chars>` it returns a TTF subset
+ * containing only those glyphs. We exploit that to guarantee a Satori-
+ * compatible binary regardless of User-Agent.
  */
-async function loadGoogleFont(family: string, weight: number = 400) {
+async function loadGoogleFont(family: string, weight: number, text: string) {
   const url = `https://fonts.googleapis.com/css2?family=${family.replace(
     / /g,
     "+",
-  )}:wght@${weight}&display=swap`;
-  const css = await (
-    await fetch(url, {
-      headers: {
-        // Older UA → returns truetype/woff URLs supported by @vercel/og
-        "User-Agent":
-          "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.0.0 Safari/537.36",
-      },
-    })
-  ).text();
-  const match = css.match(/src:\s*url\(([^)]+)\)\s*format\('(opentype|truetype|woff2?)'\)/);
+  )}:wght@${weight}&text=${encodeURIComponent(text)}`;
+  const css = await (await fetch(url)).text();
+  const match = css.match(
+    /src:\s*url\(([^)]+)\)\s*format\('(opentype|truetype)'\)/,
+  );
   if (!match) throw new Error(`Failed to parse font CSS for ${family}`);
   const fontRes = await fetch(match[1]);
   if (!fontRes.ok) throw new Error(`Failed to fetch font binary for ${family}`);
@@ -39,12 +36,14 @@ export default async function OpenGraphImage() {
   const photoDataUri = `data:image/jpeg;base64,${photoBuffer.toString("base64")}`;
 
   // Load the brand fonts. Falls back to serif/script if either fails.
+  // We pass only the characters we actually render so Google Fonts returns a
+  // TTF subset (Satori cannot parse woff2).
   let cormorant: ArrayBuffer | null = null;
   let italianno: ArrayBuffer | null = null;
   try {
     [cormorant, italianno] = await Promise.all([
-      loadGoogleFont("Cormorant Garamond", 400),
-      loadGoogleFont("Italianno", 400),
+      loadGoogleFont("Cormorant Garamond", 400, "SAVEDATE"),
+      loadGoogleFont("Italianno", 400, "the"),
     ]);
   } catch {
     /* best-effort font loading; system serif will substitute */

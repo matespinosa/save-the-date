@@ -11,21 +11,17 @@ export const contentType = "image/png";
  * the square into its own rounded-corner shape, so we render a full-bleed
  * gold gradient with the M&J monogram centered.
  */
-async function loadGoogleFont(family: string, weight: number = 400) {
+// See app/opengraph-image.tsx for why we pass `text` and limit the format to
+// TTF/OTF — Satori cannot parse woff2, and Google Fonts only returns TTF
+// subsets when the request includes `&text=`.
+async function loadGoogleFont(family: string, weight: number, text: string) {
   const url = `https://fonts.googleapis.com/css2?family=${family.replace(
     / /g,
     "+",
-  )}:wght@${weight}&display=swap`;
-  const css = await (
-    await fetch(url, {
-      headers: {
-        "User-Agent":
-          "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.0.0 Safari/537.36",
-      },
-    })
-  ).text();
+  )}:wght@${weight}&text=${encodeURIComponent(text)}`;
+  const css = await (await fetch(url)).text();
   const match = css.match(
-    /src:\s*url\(([^)]+)\)\s*format\('(opentype|truetype|woff2?)'\)/,
+    /src:\s*url\(([^)]+)\)\s*format\('(opentype|truetype)'\)/,
   );
   if (!match) throw new Error(`Failed to parse font CSS for ${family}`);
   const fontRes = await fetch(match[1]);
@@ -42,7 +38,7 @@ export default async function AppleIcon() {
   };
   const fonts: Font[] = [];
   try {
-    const italianno = await loadGoogleFont("Italianno", 400);
+    const italianno = await loadGoogleFont("Italianno", 400, "M&J");
     fonts.push({ name: "Italianno", data: italianno, weight: 400, style: "normal" });
   } catch {
     /* best-effort — system serif will substitute */
