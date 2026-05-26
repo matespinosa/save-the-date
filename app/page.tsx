@@ -8,12 +8,15 @@ export default function Page() {
     <main className="relative flex min-h-svh w-full flex-col items-center overflow-hidden">
       <BotanicalBackdrop />
 
-      <header className="relative z-10 flex w-full items-center justify-between px-6 pt-7 sm:px-12">
-        <span className="eyebrow text-moss/65">MMXXVI</span>
-        <span className="script text-forest text-2xl leading-none">
+      <header className="relative z-10 grid w-full grid-cols-3 items-center px-6 pt-7 sm:px-12">
+        <span className="eyebrow text-moss/65 justify-self-start">MMXXVI</span>
+        <span className="script text-forest text-2xl leading-none justify-self-center">
           M &amp; J
         </span>
-        <span className="eyebrow text-moss/65">03 · 10 · 2026</span>
+        <span className="eyebrow text-moss/65 justify-self-end whitespace-nowrap">
+          <span className="sm:hidden">03·10·26</span>
+          <span className="hidden sm:inline">03 · 10 · 2026</span>
+        </span>
       </header>
 
       <section className="relative z-10 flex flex-1 flex-col items-center justify-center px-4 pb-20 pt-8">
@@ -41,19 +44,21 @@ function FlowerAssets() {
       aria-hidden
       className="pointer-events-none absolute inset-0 z-0 mx-auto w-full max-w-5xl"
     >
-      {/* Left branch — base tucked behind upper-left of envelope, tips reach up & out */}
+      {/* Left branch — base tucked behind upper-left of envelope, tips reach up & out.
+          On mobile we push the base further left (off-screen-ish) and grow the height
+          so the flowering tips clear the envelope edge and remain visible. */}
       <Image
         src={flowerOne}
         alt=""
         priority
-        className="absolute left-[calc(50%-18rem)] top-[calc(50%-19rem)] h-[clamp(20rem,42vw,30rem)] w-auto -rotate-[8deg] object-contain opacity-95 drop-shadow-[0_18px_22px_rgba(47,74,56,0.12)] max-sm:left-[calc(50%-12rem)] max-sm:top-[calc(50%-15rem)] max-sm:h-[19rem]"
+        className="absolute left-[calc(50%-18rem)] top-[calc(50%-19rem)] h-[clamp(20rem,42vw,30rem)] w-auto -rotate-[8deg] object-contain opacity-95 drop-shadow-[0_18px_22px_rgba(47,74,56,0.12)] max-sm:left-[calc(50%-17rem)] max-sm:top-[calc(50%-17rem)] max-sm:h-[22rem]"
       />
-      {/* Right branch — base tucked behind upper-right of envelope, tips reach up & out */}
+      {/* Right branch — same treatment for the right side */}
       <Image
         src={flowerTwo}
         alt=""
         priority
-        className="absolute left-[calc(50%-1rem)] top-[calc(50%-18rem)] h-[clamp(17rem,36vw,26rem)] w-auto rotate-[10deg] object-contain opacity-95 drop-shadow-[0_16px_20px_rgba(47,74,56,0.1)] max-sm:left-[calc(50%-1rem)] max-sm:top-[calc(50%-14rem)] max-sm:h-[16rem]"
+        className="absolute left-[calc(50%-1rem)] top-[calc(50%-18rem)] h-[clamp(17rem,36vw,26rem)] w-auto rotate-[10deg] object-contain opacity-95 drop-shadow-[0_16px_20px_rgba(47,74,56,0.1)] max-sm:left-[calc(50%+1rem)] max-sm:top-[calc(50%-15.5rem)] max-sm:h-[19rem]"
       />
     </div>
   );

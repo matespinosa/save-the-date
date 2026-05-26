@@ -52,12 +52,15 @@ export function InvitationCard({ revealed }: { revealed: boolean }) {
           }}
         />
 
+        {/* Strong bottom-up dark gradient so the Save the Date copy is
+            legible against any photo content. Stays subtle in the upper
+            third to keep the couple's faces visible. */}
         <div
           aria-hidden
           className="absolute inset-0"
           style={{
             background:
-              "linear-gradient(180deg, rgba(18,22,18,0.04) 0%, rgba(16,20,16,0.1) 42%, rgba(7,10,8,0.68) 100%)",
+              "linear-gradient(180deg, rgba(18,22,18,0) 0%, rgba(16,20,16,0.18) 35%, rgba(8,12,9,0.62) 62%, rgba(4,7,5,0.88) 100%)",
           }}
         />
         <div
