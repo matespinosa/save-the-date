@@ -35,13 +35,15 @@ const sealVariants: Variants = {
 };
 
 // Flap lifts off the body, then folds backward over the top fold and STAYS
-// there — visible above the envelope with its inside face showing, like a real
-// opened invitation envelope.
+// there. We land a few pixels BELOW the original top edge (y: 12) so the
+// fold-line visually overlaps the envelope's top V-notch — the folded flap
+// reads as "tucked into" the envelope body instead of floating above it.
+const FLAP_SETTLE_Y = 12;
 const flapVariants: Variants = {
   sealed: { rotateX: 0, y: 0, zIndex: 30 },
   opening: {
     rotateX: -172,
-    y: [0, -5, -2, 0],
+    y: [0, -5, 4, FLAP_SETTLE_Y],
     zIndex: 0,
     transition: {
       rotateX: {
@@ -60,7 +62,7 @@ const flapVariants: Variants = {
       zIndex: { duration: 0, delay: FLAP_MID },
     },
   },
-  revealed: { rotateX: -172, y: 0, zIndex: 0 },
+  revealed: { rotateX: -172, y: FLAP_SETTLE_Y, zIndex: 0 },
 };
 
 // Card starts fully hidden (opacity 0) and materializes as it rises — the
@@ -169,6 +171,19 @@ export function Envelope() {
       initial="sealed"
       animate={stage}
     >
+      {/* Reusable rounded-V clip path for the flap faces. Uses
+          clipPathUnits="objectBoundingBox" so coordinates are 0–1 and scale
+          with whatever element it's applied to. The quadratic Béziers (Q)
+          give the three corners (top-left, top-right, V-tip) a soft radius
+          while keeping the overall V silhouette. */}
+      <svg className="pointer-events-none absolute h-0 w-0" aria-hidden>
+        <defs>
+          <clipPath id="flap-rounded" clipPathUnits="objectBoundingBox">
+            <path d="M 0.04 0 L 0.96 0 Q 1 0 1 0.07 L 0.535 0.93 Q 0.5 1 0.465 0.93 L 0 0.07 Q 0 0 0.04 0 Z" />
+          </clipPath>
+        </defs>
+      </svg>
+
       {/* Stage container — gives room for card to extract upward */}
       <div
         className="envelope-frame relative"
@@ -344,12 +359,12 @@ export function Envelope() {
                   style={{
                     background:
                       "linear-gradient(180deg, #c8ceb0 0%, #9aa37a 68%, #727b58 100%)",
-                    clipPath: "polygon(0 0, 100% 0, 50% 100%)",
+                    clipPath: "url(#flap-rounded)",
                     boxShadow:
                       "inset 0 1px 0 rgba(255,255,255,0.5), 0 6px 16px -8px rgba(48,55,35,0.36)",
                   }}
                 >
-                  {/* Hairline gold edge along the V seam */}
+                  {/* Hairline seam tracing the rounded V edges */}
                   <svg
                     className="absolute inset-0 h-full w-full"
                     viewBox="0 0 480 200"
@@ -357,7 +372,7 @@ export function Envelope() {
                     aria-hidden
                   >
                     <path
-                      d="M0 0 L240 200 L480 0"
+                      d="M 0 14 L 223 186 Q 240 200 257 186 L 480 14"
                       fill="none"
                       stroke="rgba(49,58,36,0.26)"
                       strokeWidth="0.8"
@@ -376,12 +391,12 @@ export function Envelope() {
                   style={{
                     background:
                       "linear-gradient(180deg, #a8b291 0%, #cdd2b3 45%, #dfe2c8 100%)",
-                    clipPath: "polygon(0 0, 100% 0, 50% 100%)",
+                    clipPath: "url(#flap-rounded)",
                     boxShadow:
                       "inset 0 -2px 6px rgba(48,55,35,0.18), inset 0 1px 0 rgba(255,255,255,0.35)",
                   }}
                 >
-                  {/* Subtle V-seam hairline along the inside fold */}
+                  {/* Subtle hairline tracing the rounded V-seam */}
                   <svg
                     className="absolute inset-0 h-full w-full"
                     viewBox="0 0 480 200"
@@ -389,7 +404,7 @@ export function Envelope() {
                     aria-hidden
                   >
                     <path
-                      d="M0 0 L240 200 L480 0"
+                      d="M 0 14 L 223 186 Q 240 200 257 186 L 480 14"
                       fill="none"
                       stroke="rgba(49,58,36,0.18)"
                       strokeWidth="0.6"

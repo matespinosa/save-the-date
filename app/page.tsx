@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { Envelope } from "./components/Envelope";
+import { MusicToggle } from "./components/MusicToggle";
 import flowerOne from "../assets/flower 1.png";
 import flowerTwo from "../assets/flower 2.png";
 
@@ -25,6 +26,8 @@ export default function Page() {
           <Envelope />
         </div>
       </section>
+
+      <MusicToggle src="/anillos-de-cristal.mp3" />
     </main>
   );
 }

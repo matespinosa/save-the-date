@@ -140,9 +140,39 @@ body::before {
   animation: sealPulse 2.4s ease-out infinite;
 }
 
+/* Music toggle equalizer bars — gently pulse to suggest live playback */
+@keyframes musicBar1 {
+  0%, 100% { transform: scaleY(0.55); }
+  50% { transform: scaleY(1); }
+}
+@keyframes musicBar2 {
+  0%, 100% { transform: scaleY(1); }
+  50% { transform: scaleY(0.45); }
+}
+@keyframes musicBar3 {
+  0%, 100% { transform: scaleY(0.7); }
+  50% { transform: scaleY(1); }
+}
+
+.music-bar {
+  transform-origin: center;
+}
+.music-bar-1 {
+  animation: musicBar1 1s ease-in-out infinite;
+}
+.music-bar-2 {
+  animation: musicBar2 0.9s ease-in-out infinite;
+}
+.music-bar-3 {
+  animation: musicBar3 1.1s ease-in-out infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .idle-float,
-  .seal-pulse {
+  .seal-pulse,
+  .music-bar-1,
+  .music-bar-2,
+  .music-bar-3 {
     animation: none;
   }
 }
