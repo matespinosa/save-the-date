@@ -1,10 +1,14 @@
 import { ImageResponse } from "next/og";
-import { readFile } from "node:fs/promises";
 import { join } from "node:path";
+import sharp from "sharp";
 
 export const alt = "Mateo & Julieth — Save the Date — 03.10.2026";
 export const size = { width: 1200, height: 630 };
-export const contentType = "image/png";
+// JPEG instead of PNG — Satori only emits PNG, but a 1200×630 PNG of a
+// photo-heavy thumbnail clocks in around 1.1MB (over WhatsApp's 600KB OG
+// budget). We re-encode the rendered PNG to JPEG q82 (mozjpeg), landing
+// well under all platform limits without visible quality loss.
+export const contentType = "image/jpeg";
 
 /**
  * Fetches a Google Font subset and returns its binary contents so
@@ -30,12 +34,15 @@ async function loadGoogleFont(family: string, weight: number, text: string) {
 }
 
 export default async function OpenGraphImage() {
-  // Load the wedding photo from /assets — the same source used by the live
-  // InvitationCard — and embed it as a data URI. The file is large (~36MB),
-  // but this only runs at build time; the final OG PNG output stays small.
-  const photoBuffer = await readFile(
+  // Pre-resize the 36MB source photo down to the OG canvas size at high JPEG
+  // quality so Satori doesn't have to rasterize the full original. This keeps
+  // build memory low and is visually lossless at the final 1200×630 output.
+  const photoBuffer = await sharp(
     join(process.cwd(), "assets/image-marriage-1.JPG"),
-  );
+  )
+    .resize(1200, 1600, { fit: "inside", withoutEnlargement: true })
+    .jpeg({ quality: 92 })
+    .toBuffer();
   const photoDataUri = `data:image/jpeg;base64,${photoBuffer.toString("base64")}`;
 
   // Load the brand fonts. Falls back to serif/script if either fails.
@@ -64,7 +71,7 @@ export default async function OpenGraphImage() {
   if (italianno)
     fonts.push({ name: "Italianno", data: italianno, weight: 400, style: "normal" });
 
-  return new ImageResponse(
+  const imageResponse = new ImageResponse(
     (
       <div
         style={{
@@ -229,4 +236,19 @@ export default async function OpenGraphImage() {
       fonts,
     },
   );
+
+  // Satori only outputs PNG; convert to JPEG to fit within WhatsApp's
+  // ~600KB OG image budget. mozjpeg + quality 82 yields ~180-280KB on a
+  // photo-heavy thumbnail with no perceivable loss vs. the lossless PNG.
+  const pngBuffer = Buffer.from(await imageResponse.arrayBuffer());
+  const jpegBuffer = await sharp(pngBuffer)
+    .jpeg({ quality: 82, mozjpeg: true })
+    .toBuffer();
+
+  return new Response(new Uint8Array(jpegBuffer), {
+    headers: {
+      "Content-Type": "image/jpeg",
+      "Cache-Control": "public, max-age=31536000, immutable",
+    },
+  });
 }
