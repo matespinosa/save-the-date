@@ -30,9 +30,12 @@ async function loadGoogleFont(family: string, weight: number, text: string) {
 }
 
 export default async function OpenGraphImage() {
-  // Load the wedding photo as a data URI (uses the optimized 400KB version
-  // already in /public, not the 36MB original).
-  const photoBuffer = await readFile(join(process.cwd(), "public/photo.jpg"));
+  // Load the wedding photo from /assets — the same source used by the live
+  // InvitationCard — and embed it as a data URI. The file is large (~36MB),
+  // but this only runs at build time; the final OG PNG output stays small.
+  const photoBuffer = await readFile(
+    join(process.cwd(), "assets/image-marriage-1.JPG"),
+  );
   const photoDataUri = `data:image/jpeg;base64,${photoBuffer.toString("base64")}`;
 
   // Load the brand fonts. Falls back to serif/script if either fails.
@@ -72,7 +75,7 @@ export default async function OpenGraphImage() {
           backgroundColor: "#1a1f1c",
         }}
       >
-        {/* Photo background */}
+        {/* Photo background — same framing as the live InvitationCard */}
         <img
           src={photoDataUri}
           alt=""
@@ -82,7 +85,7 @@ export default async function OpenGraphImage() {
             width: "100%",
             height: "100%",
             objectFit: "cover",
-            objectPosition: "center 35%",
+            objectPosition: "center 39%",
           }}
         />
 
