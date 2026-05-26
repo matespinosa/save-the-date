@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, useReducedMotion, type Variants } from "motion/react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { InvitationCard } from "./InvitationCard";
 
 type Stage = "sealed" | "opening" | "revealed";
@@ -125,9 +125,33 @@ const pocketVariants: Variants = {
   revealed: { zIndex: 40 },
 };
 
+
 export function Envelope() {
   const [stage, setStage] = useState<Stage>("sealed");
+  // Tracks which face of the flap should be in the DOM. Only ONE face is ever
+  // rendered, swapped at the rotation midpoint when the flap is edge-on. This
+  // sidesteps Safari's unreliable backface-visibility handling inside
+  // preserve-3d ancestors — the wrong face simply cannot render because it
+  // does not exist in the tree.
+  const [flapFlipped, setFlapFlipped] = useState(false);
   const reduced = useReducedMotion();
+
+  useEffect(() => {
+    if (stage === "opening") {
+      if (reduced) {
+        setFlapFlipped(true);
+        return;
+      }
+      const t = window.setTimeout(
+        () => setFlapFlipped(true),
+        FLAP_MID * 1000,
+      );
+      return () => window.clearTimeout(t);
+    }
+    if (stage === "sealed") {
+      setFlapFlipped(false);
+    }
+  }, [stage, reduced]);
 
   const handleOpen = () => {
     if (stage !== "sealed") return;
@@ -310,63 +334,69 @@ export function Envelope() {
               initial="sealed"
               animate={stage}
             >
-              {/* Outside face */}
-              <div
-                className="lemon-granite absolute inset-0"
-                style={{
-                  background:
-                    "linear-gradient(180deg, #c8ceb0 0%, #9aa37a 68%, #727b58 100%)",
-                  clipPath: "polygon(0 0, 100% 0, 50% 100%)",
-                  backfaceVisibility: "hidden",
-                  boxShadow:
-                    "inset 0 1px 0 rgba(255,255,255,0.5), 0 6px 16px -8px rgba(48,55,35,0.36)",
-                }}
-              >
-                {/* Hairline gold edge along the V seam */}
-                <svg
-                  className="absolute inset-0 h-full w-full"
-                  viewBox="0 0 480 200"
-                  preserveAspectRatio="none"
-                  aria-hidden
+              {/* Only one face is in the DOM at a time. The swap happens
+                  exactly when the flap is edge-on (FLAP_MID), so the change
+                  is invisible to the user but bulletproof across browsers. */}
+              {!flapFlipped ? (
+                /* Outside face — sealed envelope appearance */
+                <div
+                  className="lemon-granite absolute inset-0"
+                  style={{
+                    background:
+                      "linear-gradient(180deg, #c8ceb0 0%, #9aa37a 68%, #727b58 100%)",
+                    clipPath: "polygon(0 0, 100% 0, 50% 100%)",
+                    boxShadow:
+                      "inset 0 1px 0 rgba(255,255,255,0.5), 0 6px 16px -8px rgba(48,55,35,0.36)",
+                  }}
                 >
-                  <path
-                    d="M0 0 L240 200 L480 0"
-                    fill="none"
-                    stroke="rgba(49,58,36,0.26)"
-                    strokeWidth="0.8"
-                  />
-                </svg>
-              </div>
-
-              {/* Inside face (revealed when flap rotates back & stays) —
-                  lighter paper-like interior to match a real opened envelope */}
-              <div
-                className="lemon-granite absolute inset-0"
-                style={{
-                  background:
-                    "linear-gradient(0deg, #a8b291 0%, #cdd2b3 55%, #dfe2c8 100%)",
-                  clipPath: "polygon(0 0, 100% 0, 50% 100%)",
-                  backfaceVisibility: "hidden",
-                  transform: "rotateX(180deg)",
-                  boxShadow:
-                    "inset 0 -2px 6px rgba(48,55,35,0.18), inset 0 1px 0 rgba(255,255,255,0.35)",
-                }}
-              >
-                {/* Subtle V-seam hairline along the inside fold */}
-                <svg
-                  className="absolute inset-0 h-full w-full"
-                  viewBox="0 0 480 200"
-                  preserveAspectRatio="none"
-                  aria-hidden
+                  {/* Hairline gold edge along the V seam */}
+                  <svg
+                    className="absolute inset-0 h-full w-full"
+                    viewBox="0 0 480 200"
+                    preserveAspectRatio="none"
+                    aria-hidden
+                  >
+                    <path
+                      d="M0 0 L240 200 L480 0"
+                      fill="none"
+                      stroke="rgba(49,58,36,0.26)"
+                      strokeWidth="0.8"
+                    />
+                  </svg>
+                </div>
+              ) : (
+                /* Inside face — no self-rotation. The parent flap's -172°
+                   fold around its top edge is enough: the local bottom edge
+                   (V tip) ends up above the envelope as the folded apex, and
+                   the local top edge stays anchored at the envelope's top
+                   fold. Gradient is darker at local top (the fold/shadow)
+                   and lighter at local bottom (the well-lit apex). */
+                <div
+                  className="lemon-granite absolute inset-0"
+                  style={{
+                    background:
+                      "linear-gradient(180deg, #a8b291 0%, #cdd2b3 45%, #dfe2c8 100%)",
+                    clipPath: "polygon(0 0, 100% 0, 50% 100%)",
+                    boxShadow:
+                      "inset 0 -2px 6px rgba(48,55,35,0.18), inset 0 1px 0 rgba(255,255,255,0.35)",
+                  }}
                 >
-                  <path
-                    d="M0 0 L240 200 L480 0"
-                    fill="none"
-                    stroke="rgba(49,58,36,0.18)"
-                    strokeWidth="0.6"
-                  />
-                </svg>
-              </div>
+                  {/* Subtle V-seam hairline along the inside fold */}
+                  <svg
+                    className="absolute inset-0 h-full w-full"
+                    viewBox="0 0 480 200"
+                    preserveAspectRatio="none"
+                    aria-hidden
+                  >
+                    <path
+                      d="M0 0 L240 200 L480 0"
+                      fill="none"
+                      stroke="rgba(49,58,36,0.18)"
+                      strokeWidth="0.6"
+                    />
+                  </svg>
+                </div>
+              )}
 
               {/* Wax seal at the V point */}
               <motion.div
