@@ -34,11 +34,13 @@ export const metadata: Metadata = {
   },
 };
 
-// Tints the mobile browser address bar / app tab chrome to match the cream
-// gradient at the top of the page, so the browser UI blends seamlessly with
-// the invitation background.
+// Tints the mobile browser chrome (top status bar / bottom URL bar in Safari
+// iOS) to match the cream gradient. We pick the BOTTOM stop of the gradient
+// (#e6e3d2) instead of the top (#fbfaf5) because the previous near-white value
+// was being rendered as plain white by Safari, especially around the bottom
+// URL bar where iOS samples adaptively.
 export const viewport: Viewport = {
-  themeColor: "#fbfaf5",
+  themeColor: "#e6e3d2",
   colorScheme: "light",
 };
 
@@ -52,7 +54,10 @@ export default function RootLayout({
       lang="es"
       className={`${cormorant.variable} ${inter.variable} ${italianno.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-paper text-ink">
+      <body
+        className="min-h-full flex flex-col text-ink"
+        style={{ backgroundColor: "#e6e3d2" }}
+      >
         {children}
       </body>
     </html>
