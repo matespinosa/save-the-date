@@ -21,45 +21,61 @@ const itemVariants: Variants = {
 export function InvitationCard({ revealed }: { revealed: boolean }) {
   return (
     <div
-      className="relative h-full w-full overflow-hidden rounded-[5px] bg-ink"
+      className="relative h-full w-full rounded-[6px] p-[6px] sm:p-[7px]"
       style={{
+        background:
+          "linear-gradient(150deg, #fffdf7 0%, #fbf6ea 55%, #f3ebda 100%)",
         boxShadow:
-          "0 1px 0 rgba(255,255,255,0.35) inset, 0 0 0 1px rgba(38,57,45,0.16), 0 30px 60px -24px rgba(38,57,45,0.5)",
+          "0 1px 0 rgba(255,255,255,0.7) inset, 0 0 0 1px rgba(38,57,45,0.18), 0 30px 60px -24px rgba(38,57,45,0.5)",
       }}
     >
-      <div
+      {/* Inner hairline — gives the white mat that subtle gallery-frame edge */}
+      <span
         aria-hidden
-        className="absolute inset-0 bg-cover bg-center"
-        style={{
-          backgroundImage: "url(/image-marriage-1.JPG)",
-          backgroundPosition: "center 39%",
-        }}
+        className="pointer-events-none absolute inset-[3px] rounded-[4px]"
+        style={{ border: "0.5px solid rgba(168, 142, 96, 0.22)" }}
       />
 
       <div
-        aria-hidden
-        className="absolute inset-0"
+        className="relative h-full w-full overflow-hidden rounded-[3px] bg-ink"
         style={{
-          background:
-            "linear-gradient(180deg, rgba(18,22,18,0.04) 0%, rgba(16,20,16,0.1) 42%, rgba(7,10,8,0.68) 100%)",
+          boxShadow:
+            "0 0 0 1px rgba(38,57,45,0.22), inset 0 1px 0 rgba(255,255,255,0.08)",
         }}
-      />
-      <div
-        aria-hidden
-        className="absolute inset-0 opacity-[0.14] mix-blend-soft-light"
-        style={{
-          backgroundImage:
-            "radial-gradient(rgba(255,255,255,0.9) 0.65px, transparent 0.65px)",
-          backgroundSize: "3px 3px",
-        }}
-      />
-
-      <motion.div
-        className="relative z-10 flex h-full flex-col items-center justify-end px-5 pb-8 text-center text-white sm:px-7 sm:pb-10"
-        variants={containerVariants}
-        initial="hidden"
-        animate={revealed ? "visible" : "hidden"}
       >
+        <div
+          aria-hidden
+          className="absolute inset-0 bg-cover bg-center"
+          style={{
+            backgroundImage: "url(/image-marriage-1.JPG)",
+            backgroundPosition: "center 39%",
+          }}
+        />
+
+        <div
+          aria-hidden
+          className="absolute inset-0"
+          style={{
+            background:
+              "linear-gradient(180deg, rgba(18,22,18,0.04) 0%, rgba(16,20,16,0.1) 42%, rgba(7,10,8,0.68) 100%)",
+          }}
+        />
+        <div
+          aria-hidden
+          className="absolute inset-0 opacity-[0.14] mix-blend-soft-light"
+          style={{
+            backgroundImage:
+              "radial-gradient(rgba(255,255,255,0.9) 0.65px, transparent 0.65px)",
+            backgroundSize: "3px 3px",
+          }}
+        />
+
+        <motion.div
+          className="relative z-10 flex h-full flex-col items-center justify-end px-5 pb-8 text-center text-white sm:px-7 sm:pb-10"
+          variants={containerVariants}
+          initial="hidden"
+          animate={revealed ? "visible" : "hidden"}
+        >
         <motion.p
           variants={itemVariants}
           className="font-sans text-[0.58rem] font-semibold uppercase tracking-[0.5em] text-white/85 sm:text-[0.7rem]"
@@ -100,7 +116,15 @@ export function InvitationCard({ revealed }: { revealed: boolean }) {
         >
           Bogotá, Colombia
         </motion.p>
+
+        <motion.p
+          variants={itemVariants}
+          className="mt-3 font-sans text-[0.54rem] font-medium tracking-[0.16em] text-white/80 sm:text-[0.64rem]"
+        >
+          La invitación se enviará próximamente
+        </motion.p>
       </motion.div>
+      </div>
     </div>
   );
 }

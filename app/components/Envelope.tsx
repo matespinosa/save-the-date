@@ -6,59 +6,92 @@ import { InvitationCard } from "./InvitationCard";
 
 type Stage = "sealed" | "opening" | "revealed";
 
-const SEAL_DURATION = 0.65;
-const FLAP_DELAY = 0.35;
-const FLAP_DURATION = 1.05;
-const CARD_DELAY = FLAP_DELAY + 0.55;
-const CARD_DURATION = 1.5;
+// Continuous timing — every beat overlaps the next so there is never a moment
+// where nothing is moving. Total visible motion is ~1.55s from click to card
+// settled, vs. ~2.4s before.
+const SEAL_DURATION = 0.38;
+const FLAP_DELAY = 0.06;
+const FLAP_DURATION = 0.68;
+const FLAP_MID = FLAP_DELAY + FLAP_DURATION * 0.5; // ~0.4s — flap is edge-on
+const CARD_DELAY = FLAP_DELAY + FLAP_DURATION * 0.62; // ~0.48s — card emerges as flap tucks back
+const CARD_DURATION = 1.05;
 
+// Seal cracks loose: scales up briefly (anticipation), then breaks free and
+// tumbles up & away while fading.
 const sealVariants: Variants = {
-  sealed: { scale: 1, opacity: 1, rotate: 0 },
+  sealed: { scale: 1, opacity: 1, rotate: 0, y: 0 },
   opening: {
-    scale: [1, 1.12, 0],
-    rotate: [0, -6, 28],
-    opacity: [1, 1, 0],
-    transition: { duration: SEAL_DURATION, ease: "easeIn", times: [0, 0.4, 1] },
+    scale: [1, 1.2, 0.55, 0],
+    rotate: [0, -9, 22, 42],
+    opacity: [1, 1, 0.65, 0],
+    y: [0, -3, -16, -32],
+    transition: {
+      duration: SEAL_DURATION,
+      ease: [0.32, 0.1, 0.65, 1],
+      times: [0, 0.28, 0.7, 1],
+    },
   },
-  revealed: { scale: 0, opacity: 0, rotate: 28 },
+  revealed: { scale: 0, opacity: 0, rotate: 42, y: -32 },
 };
 
+// Flap lifts off the body, then folds backward over the top fold and STAYS
+// there — visible above the envelope with its inside face showing, like a real
+// opened invitation envelope.
 const flapVariants: Variants = {
-  sealed: { rotateX: 0, opacity: 1, zIndex: 30 },
+  sealed: { rotateX: 0, y: 0, zIndex: 30 },
   opening: {
-    rotateX: -180,
-    opacity: 0,
+    rotateX: -172,
+    y: [0, -5, -2, 0],
     zIndex: 0,
     transition: {
       rotateX: {
         duration: FLAP_DURATION,
-        ease: [0.65, 0, 0.35, 1],
+        ease: [0.5, 0.02, 0.22, 1],
         delay: FLAP_DELAY,
       },
-      // Fade out right as the flap reaches edge-on, so it visually
-      // tucks behind the envelope instead of flipping above it.
-      opacity: {
-        duration: 0.25,
-        delay: FLAP_DELAY + FLAP_DURATION * 0.46,
-        ease: "easeIn",
+      y: {
+        duration: FLAP_DURATION * 0.85,
+        times: [0, 0.25, 0.6, 1],
+        ease: "easeOut",
+        delay: FLAP_DELAY,
       },
-      zIndex: { duration: 0, delay: FLAP_DELAY + FLAP_DURATION * 0.5 },
+      // Drop behind the card pocket right as the flap goes edge-on,
+      // so the card slides in front when it starts to emerge.
+      zIndex: { duration: 0, delay: FLAP_MID },
     },
   },
-  revealed: { rotateX: -180, opacity: 0, zIndex: 0 },
+  revealed: { rotateX: -172, y: 0, zIndex: 0 },
 };
 
+// Card starts fully hidden (opacity 0) and materializes as it rises — the
+// fade-in is synced with the slide so the card visually "appears" as it
+// emerges from the envelope, rather than popping into view at full opacity.
 const cardSlideVariants: Variants = {
-  sealed: { y: 0 },
+  sealed: { y: 0, opacity: 0, rotate: 0 },
   opening: {
     y: "-78%",
+    opacity: 1,
+    rotate: [0, 1.2, -0.6, 0.2, 0],
     transition: {
-      duration: CARD_DURATION,
-      ease: [0.16, 1, 0.3, 1],
-      delay: CARD_DELAY,
+      y: {
+        duration: CARD_DURATION,
+        ease: [0.16, 1, 0.3, 1],
+        delay: CARD_DELAY,
+      },
+      opacity: {
+        duration: CARD_DURATION * 0.7,
+        ease: [0.4, 0, 0.4, 1],
+        delay: CARD_DELAY + CARD_DURATION * 0.05,
+      },
+      rotate: {
+        duration: CARD_DURATION,
+        times: [0, 0.18, 0.5, 0.78, 1],
+        ease: "easeInOut",
+        delay: CARD_DELAY,
+      },
     },
   },
-  revealed: { y: "-78%" },
+  revealed: { y: "-78%", opacity: 1, rotate: 0 },
 };
 
 const stageShiftVariants: Variants = {
@@ -76,8 +109,20 @@ const stageShiftVariants: Variants = {
 
 const ctaVariants: Variants = {
   sealed: { opacity: 1, y: 0 },
-  opening: { opacity: 0, y: 8, transition: { duration: 0.25 } },
+  opening: { opacity: 0, y: 8, transition: { duration: 0.2 } },
   revealed: { opacity: 0, y: 8 },
+};
+
+// Pocket z-index flips from behind-the-flap (z-10) to in-front-of-everything
+// (z-40) precisely as the card begins its slide — so the card never overlaps a
+// still-rotating flap, and never pops into view before moving.
+const pocketVariants: Variants = {
+  sealed: { zIndex: 10 },
+  opening: {
+    zIndex: 40,
+    transition: { zIndex: { duration: 0, delay: CARD_DELAY - 0.02 } },
+  },
+  revealed: { zIndex: 40 },
 };
 
 export function Envelope() {
@@ -129,7 +174,7 @@ export function Envelope() {
           className={`relative h-full w-full ${
             stage === "sealed" ? "cursor-pointer" : "cursor-default"
           }`}
-          style={{ perspective: "1400px" }}
+          style={{ perspective: "1150px" }}
         >
           <motion.div
             className="relative h-full w-full"
@@ -195,12 +240,16 @@ export function Envelope() {
               </svg>
             </div>
 
-            {/* Card pocket — z-10, clipped so card can escape ONLY upward */}
-            <div
-              className={`absolute inset-0 ${stage === "sealed" ? "z-10" : "z-40"}`}
+            {/* Card pocket — z-index flips on a delay so the card doesn't pop
+                in front of the flap before its slide begins */}
+            <motion.div
+              className="absolute inset-0"
               style={{
                 clipPath: "inset(-1200px 0 0 0)",
               }}
+              variants={pocketVariants}
+              initial="sealed"
+              animate={stage}
             >
               <motion.div
                 className="absolute left-1/2"
@@ -210,10 +259,7 @@ export function Envelope() {
                   x: "-50%",
                   top: "5%",
                   transformOrigin: "50% 100%",
-                  filter:
-                    stage === "sealed"
-                      ? "drop-shadow(0 0 0 rgba(0,0,0,0))"
-                      : "drop-shadow(0 28px 30px rgba(47,74,56,0.28))",
+                  willChange: "transform",
                 }}
                 variants={cardSlideVariants}
                 initial="sealed"
@@ -221,7 +267,7 @@ export function Envelope() {
               >
                 <InvitationCard revealed={stage === "revealed"} />
               </motion.div>
-            </div>
+            </motion.div>
 
             {/* Front body — z-20, V notch goes from top corners to a point at 62.5% */}
             <div
@@ -258,6 +304,7 @@ export function Envelope() {
                 height: "62.5%",
                 transformOrigin: "top",
                 transformStyle: "preserve-3d",
+                willChange: "transform, opacity",
               }}
               variants={flapVariants}
               initial="sealed"
@@ -291,18 +338,35 @@ export function Envelope() {
                 </svg>
               </div>
 
-              {/* Inside face (revealed when flap rotates) */}
+              {/* Inside face (revealed when flap rotates back & stays) —
+                  lighter paper-like interior to match a real opened envelope */}
               <div
-                className="absolute inset-0"
+                className="lemon-granite absolute inset-0"
                 style={{
                   background:
-                    "linear-gradient(0deg, #79835d 0%, #b7bea0 100%)",
+                    "linear-gradient(0deg, #a8b291 0%, #cdd2b3 55%, #dfe2c8 100%)",
                   clipPath: "polygon(0 0, 100% 0, 50% 100%)",
                   backfaceVisibility: "hidden",
                   transform: "rotateX(180deg)",
-                  boxShadow: "inset 0 -1px 4px rgba(48,55,35,0.2)",
+                  boxShadow:
+                    "inset 0 -2px 6px rgba(48,55,35,0.18), inset 0 1px 0 rgba(255,255,255,0.35)",
                 }}
-              />
+              >
+                {/* Subtle V-seam hairline along the inside fold */}
+                <svg
+                  className="absolute inset-0 h-full w-full"
+                  viewBox="0 0 480 200"
+                  preserveAspectRatio="none"
+                  aria-hidden
+                >
+                  <path
+                    d="M0 0 L240 200 L480 0"
+                    fill="none"
+                    stroke="rgba(49,58,36,0.18)"
+                    strokeWidth="0.6"
+                  />
+                </svg>
+              </div>
 
               {/* Wax seal at the V point */}
               <motion.div
@@ -358,9 +422,9 @@ function WaxSeal({ idle }: { idle: boolean }) {
       }`}
       style={{
         background:
-          "radial-gradient(circle at 35% 30%, #f0dcc6 0%, #d5a892 45%, #9d6f61 100%)",
+          "radial-gradient(circle at 32% 28%, #fff2bf 0%, #d8b04e 42%, #9f7422 100%)",
         boxShadow:
-          "inset 0 2px 4px rgba(255,245,230,0.55), inset 0 -3px 6px rgba(70,45,38,0.28), 0 4px 14px rgba(92,60,48,0.22)",
+          "inset 0 2px 4px rgba(255,248,210,0.72), inset 0 -3px 7px rgba(72,48,10,0.34), 0 4px 16px rgba(115,82,21,0.28)",
       }}
     >
       {/* Ring */}
@@ -368,14 +432,15 @@ function WaxSeal({ idle }: { idle: boolean }) {
         aria-hidden
         className="absolute inset-1.5 rounded-full"
         style={{
-          border: "0.5px solid rgba(255,245,230,0.48)",
-          boxShadow: "inset 0 0 6px rgba(70,45,38,0.16)",
+          border: "0.5px solid rgba(255,247,205,0.72)",
+          boxShadow:
+            "inset 0 0 6px rgba(72,48,10,0.2), 0 0 0 1px rgba(85,58,16,0.14)",
         }}
       />
       {/* Monogram */}
       <span
-        className="script select-none text-2xl leading-none text-paper drop-shadow-[0_1px_0_rgba(70,45,38,0.24)]"
-        style={{ marginTop: "-2px" }}
+        className="script select-none text-[1.15rem] leading-none text-forest drop-shadow-[0_1px_0_rgba(255,246,203,0.48)] sm:text-[1.25rem]"
+        style={{ transform: "translateY(-1px)", letterSpacing: "-0.04em" }}
       >
         M&amp;J
       </span>

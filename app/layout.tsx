@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Cormorant_Garamond, Inter, Italianno } from "next/font/google";
 import "./globals.css";
 
@@ -34,6 +34,14 @@ export const metadata: Metadata = {
   },
 };
 
+// Tints the mobile browser address bar / app tab chrome to match the cream
+// gradient at the top of the page, so the browser UI blends seamlessly with
+// the invitation background.
+export const viewport: Viewport = {
+  themeColor: "#fbfaf5",
+  colorScheme: "light",
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -44,7 +52,7 @@ export default function RootLayout({
       lang="es"
       className={`${cormorant.variable} ${inter.variable} ${italianno.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-ink text-ivory">
+      <body className="min-h-full flex flex-col bg-paper text-ink">
         {children}
       </body>
     </html>
