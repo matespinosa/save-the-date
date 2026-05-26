@@ -1,26 +1,142 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --ink: #26392d;
+  --ink-soft: #3c5745;
+  --ivory: #fffdf7;
+  --paper: #fffaf0;
+  --paper-warm: #f5ead8;
+  --paper-edge: #dbe5c9;
+  --sage: #dbe8d1;
+  --sage-deep: #8ea483;
+  --forest: #2f4a38;
+  --moss: #5d7256;
+  --blush: #d8a48f;
+  --champagne: #d8b892;
+  --champagne-deep: #a97958;
+  --champagne-soft: #f1dcc7;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-ivory: var(--ivory);
+  --color-paper: var(--paper);
+  --color-paper-warm: var(--paper-warm);
+  --color-paper-edge: var(--paper-edge);
+  --color-sage: var(--sage);
+  --color-sage-deep: var(--sage-deep);
+  --color-forest: var(--forest);
+  --color-moss: var(--moss);
+  --color-blush: var(--blush);
+  --color-champagne: var(--champagne);
+  --color-champagne-deep: var(--champagne-deep);
+  --color-champagne-soft: var(--champagne-soft);
+
+  --font-serif: var(--font-serif), "Cormorant Garamond", "EB Garamond", Georgia, serif;
+  --font-sans: var(--font-sans), "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-script: var(--font-script), "Italianno", "Snell Roundhand", cursive;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+html,
+body {
+  background:
+    radial-gradient(120% 75% at 50% 0%, rgba(255, 255, 255, 0.9) 0%, rgba(244, 237, 224, 0.2) 55%, transparent 100%),
+    linear-gradient(180deg, #fbfaf5 0%, #f3eadc 52%, #e6e3d2 100%)
+      no-repeat fixed;
+  color: var(--ink);
+  font-family: var(--font-sans);
+  letter-spacing: 0;
+}
+
+/* Soft paper grain over everything for a tactile invitation feel */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 60;
+  opacity: 0.08;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)' opacity='0.7'/></svg>");
+}
+
+/* Paper texture: subtle warm fibers for envelope + card */
+.paper-texture {
+  background-image:
+    radial-gradient(rgba(55, 82, 62, 0.045) 1px, transparent 1px),
+    radial-gradient(rgba(162, 125, 90, 0.035) 1px, transparent 1px);
+  background-size: 5px 5px, 11px 11px;
+  background-position: 0 0, 2px 3px;
+}
+
+.lemon-granite {
+  background-blend-mode: multiply, normal;
+}
+
+.lemon-granite::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.23;
+  mix-blend-mode: multiply;
+  background-image:
+    radial-gradient(rgba(38, 45, 28, 0.3) 0.65px, transparent 0.75px),
+    radial-gradient(rgba(234, 232, 203, 0.5) 0.7px, transparent 0.8px),
+    radial-gradient(rgba(79, 88, 57, 0.24) 1px, transparent 1.1px);
+  background-position: 0 0, 2px 3px, 5px 1px;
+  background-size: 4px 4px, 7px 7px, 11px 11px;
+}
+
+.serif {
+  font-family: var(--font-serif);
+}
+.script {
+  font-family: var(--font-script);
+}
+
+/* Tracked-out uppercase utility used on labels */
+.eyebrow {
+  font-family: var(--font-sans);
+  text-transform: uppercase;
+  letter-spacing: 0.32em;
+  font-size: 0.7rem;
+  font-weight: 500;
+}
+
+@keyframes idleFloat {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@keyframes sealPulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(200, 168, 120, 0.45),
+      inset 0 2px 4px rgba(62, 84, 54, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 0 14px rgba(216, 184, 146, 0),
+      inset 0 2px 4px rgba(62, 84, 54, 0.2);
+  }
+}
+
+.idle-float {
+  animation: idleFloat 4.5s ease-in-out infinite;
+}
+.seal-pulse {
+  animation: sealPulse 2.4s ease-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .idle-float,
+  .seal-pulse {
+    animation: none;
+  }
 }
