@@ -40,10 +40,14 @@
 
 html,
 body {
+  /* Uniform cream that matches the mobile browser chrome (theme-color
+     #e6e3d2) end-to-end. The very subtle radial highlight at top-center
+     is now ALSO cream (not white) so it adds depth without bleaching the
+     header area to look almost-white. */
   background-color: #e6e3d2;
   background-image:
-    radial-gradient(120% 75% at 50% 0%, rgba(255, 255, 255, 0.9) 0%, rgba(244, 237, 224, 0.2) 55%, transparent 100%),
-    linear-gradient(180deg, #fbfaf5 0%, #f3eadc 45%, #e6e3d2 80%, #e6e3d2 100%);
+    radial-gradient(120% 70% at 50% 0%, rgba(240, 235, 218, 0.55) 0%, rgba(232, 228, 212, 0.25) 50%, transparent 100%),
+    linear-gradient(180deg, #ece8d8 0%, #e6e3d2 55%, #e6e3d2 100%);
   background-repeat: no-repeat;
   background-attachment: fixed;
   color: var(--ink);
